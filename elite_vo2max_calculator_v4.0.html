@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ELITE VO₂max Calculator v4 | Wu Tsai Human Performance Alliance</title>
+<style>
+  :root {
+    --cardinal:    #8C1515;
+    --cardinal-dk: #651212;
+    --cardinal-lt: #B83A3A;
+    --stone:       #F4F0EC;
+    --stone-dk:    #E8E3DC;
+    --white:       #FFFFFF;
+    --ink:         #1A1A1A;
+    --ink-mid:     #4A4A4A;
+    --ink-lt:      #767676;
+    --border:      rgba(0,0,0,0.12);
+    --border-lt:   rgba(0,0,0,0.07);
+    --shadow:      0 2px 20px rgba(0,0,0,0.08);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: var(--stone);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ─── Header ─── */
+  .site-header { background: var(--cardinal); }
+  .header-inner {
+    max-width: 800px; margin: 0 auto; padding: 18px 2rem;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .logo-stanford {
+    font-family: 'Georgia', serif; font-size: 15px; font-weight: bold;
+    letter-spacing: 0.03em; color: #fff; text-transform: uppercase;
+  }
+  .logo-sub { font-family: -apple-system, sans-serif; font-size: 11px; color: rgba(255,255,255,0.7); letter-spacing: 0.04em; }
+  .header-divider { width: 1px; height: 36px; background: rgba(255,255,255,0.3); margin: 0 4px; }
+  .header-title { font-family: -apple-system, sans-serif; font-size: 13px; color: rgba(255,255,255,0.85); }
+
+  /* ─── Hero ─── */
+  .hero { background: var(--cardinal-dk); color: #fff; padding: 2rem 2rem 1.75rem; border-bottom: 3px solid var(--cardinal-lt); }
+  .hero-inner { max-width: 800px; margin: 0 auto; }
+  .hero-eyebrow { font-family: -apple-system, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 8px; }
+  .hero h1 { font-family: 'Georgia', serif; font-size: 28px; font-weight: normal; line-height: 1.25; margin-bottom: 8px; }
+  .hero p { font-family: -apple-system, sans-serif; font-size: 14px; color: rgba(255,255,255,0.7); line-height: 1.6; max-width: 580px; }
+
+  /* ─── Main ─── */
+  .main { max-width: 800px; margin: 0 auto; padding: 2rem; }
+
+  /* ─── Card ─── */
+  .card { background: var(--white); border-radius: 4px; border: 0.5px solid var(--border); box-shadow: var(--shadow); margin-bottom: 1.25rem; overflow: hidden; }
+  .card-header { background: var(--stone); border-bottom: 1px solid var(--border-lt); padding: 10px 1.25rem; display: flex; align-items: center; gap: 8px; }
+  .card-header-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cardinal); flex-shrink: 0; }
+  .card-header-label { font-family: -apple-system, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-mid); }
+  .card-body { padding: 1.25rem; }
+
+  /* ─── Equation selector ─── */
+  .eq-select-wrap label { font-family: -apple-system, sans-serif; font-size: 12px; color: var(--ink-lt); display: block; margin-bottom: 6px; font-weight: 500; }
+  select.eq-picker {
+    width: 100%; font-size: 14px; padding: 10px 32px 10px 12px;
+    border: 1px solid var(--border); border-radius: 3px;
+    background: var(--white); color: var(--ink); outline: none;
+    font-family: -apple-system, sans-serif; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23767676' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; cursor: pointer;
+  }
+  select.eq-picker:focus { border-color: var(--cardinal); }
+  .eq-stats { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .stat-pill { background: var(--stone); border: 0.5px solid var(--border); border-radius: 3px; padding: 5px 10px; font-family: -apple-system, sans-serif; font-size: 12px; color: var(--ink-mid); }
+  .stat-pill strong { color: var(--ink); font-weight: 600; }
+  .equation-box { background: #1A1A1A; border-radius: 3px; padding: 1.1rem 1.25rem; margin-top: 1rem; font-family: 'Courier New', monospace; font-size: 12.5px; line-height: 2.1; color: #CBD5E1; }
+  .eq-title { color: #F8FAFC; font-weight: bold; }
+  .c-red    { color: #FCA5A5; } .c-blue   { color: #93C5FD; }
+  .c-green  { color: #86EFAC; } .c-amber  { color: #FCD34D; }
+  .c-teal   { color: #5EEAD4; } .c-purple { color: #C4B5FD; }
+  .c-coral  { color: #FDBA74; }
+
+  /* ─── Unit toggle ─── */
+  .unit-toggle-bar {
+    display: flex; align-items: center; gap: 16px;
+    background: var(--stone); border: 0.5px solid var(--border);
+    border-radius: 3px; padding: 10px 14px; margin-bottom: 14px;
+    font-family: -apple-system, sans-serif; font-size: 12px; color: var(--ink-mid);
+    flex-wrap: wrap;
+  }
+  .unit-toggle-bar span { font-weight: 600; color: var(--ink-lt); letter-spacing: 0.05em; text-transform: uppercase; font-size: 11px; }
+  .toggle-group { display: flex; border: 1px solid var(--border); border-radius: 3px; overflow: hidden; }
+  .toggle-btn {
+    padding: 5px 12px; font-size: 12px; font-family: -apple-system, sans-serif;
+    cursor: pointer; border: none; background: var(--white); color: var(--ink-lt);
+    transition: background 0.15s, color 0.15s;
+  }
+  .toggle-btn.active { background: var(--cardinal); color: #fff; font-weight: 600; }
+  .toggle-btn:not(:last-child) { border-right: 1px solid var(--border); }
+
+  /* ─── Input grid ─── */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field { background: var(--white); border: 1px solid var(--border); border-radius: 3px; padding: 12px; }
+  .field.full { grid-column: span 2; }
+  .field.hidden { display: none !important; }
+  .field-label {
+    font-family: -apple-system, sans-serif; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-lt);
+    display: block; margin-bottom: 8px;
+  }
+  .field-label .val-display { font-weight: 700; color: var(--ink); text-transform: none; letter-spacing: 0; font-size: 13px; }
+
+  /* ft+in row */
+  .ft-in-row { display: flex; gap: 8px; }
+  .ft-in-row input { flex: 1; }
+  .ft-in-row .ft-label { font-family: -apple-system, sans-serif; font-size: 11px; color: var(--ink-lt); align-self: center; margin-left: 2px; }
+
+  select.field-select, input[type="number"] {
+    width: 100%; font-size: 14px; padding: 8px 10px;
+    border: 1px solid var(--border); border-radius: 3px;
+    background: var(--stone); color: var(--ink); outline: none;
+    font-family: -apple-system, sans-serif;
+  }
+  select.field-select:focus, input[type="number"]:focus { border-color: var(--cardinal); }
+  input[type="range"] { width: 100%; cursor: pointer; margin-top: 4px; accent-color: var(--cardinal); }
+  .hint { font-family: -apple-system, sans-serif; font-size: 11px; color: var(--ink-lt); margin-top: 6px; line-height: 1.5; }
+
+  /* Pace hint table */
+  .pace-hint-toggle { font-family: -apple-system, sans-serif; font-size: 11px; color: var(--cardinal); cursor: pointer; margin-top: 6px; display: inline-block; text-decoration: underline; text-underline-offset: 2px; }
+  .pace-ref { display: none; margin-top: 8px; background: var(--stone); border-radius: 3px; padding: 8px 10px; font-family: -apple-system, sans-serif; font-size: 11px; color: var(--ink-mid); }
+  .pace-ref table { width: 100%; border-collapse: collapse; }
+  .pace-ref td { padding: 2px 8px 2px 0; }
+  .pace-ref td:first-child { color: var(--ink-lt); width: 80px; }
+
+  /* ─── Result ─── */
+  .result-card {
+    background: var(--cardinal); border-radius: 4px; padding: 1.5rem;
+    color: #fff; display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .result-label { font-family: -apple-system, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+  .result-value { font-family: 'Georgia', serif; font-size: 52px; font-weight: normal; line-height: 1; color: #fff; }
+  .result-unit { font-family: -apple-system, sans-serif; font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 4px; }
+  .cat-label { font-family: -apple-system, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 6px; text-align: right; }
+  .cat-value { font-family: 'Georgia', serif; font-size: 20px; text-align: right; color: #fff; }
+  .ref-note { font-family: -apple-system, sans-serif; font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px; text-align: right; }
+
+  /* ─── Calculation details ─── */
+  .breakdown {
+    background: var(--white);
+    padding: 0.75rem 1.25rem 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 12px;
+    color: var(--ink-mid);
+    line-height: 1.6;
+  }
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    border-bottom: 1px solid var(--border-lt);
+    padding: 7px 0;
+  }
+  .breakdown-row:last-of-type { border-bottom: none; }
+  .breakdown-row .term-label { color: var(--ink-mid); }
+  .breakdown-row .term-value {
+    font-family: 'Courier New', monospace;
+    color: var(--ink);
+    font-weight: 700;
+    white-space: normal;
+    text-align: right;
+    line-height: 1.5;
+  }
+  .breakdown-total {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--stone);
+    border: 0.5px solid var(--border);
+    border-radius: 3px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+
+  /* ─── UX enhancements ─── */
+  .model-helper { margin-top: 12px; }
+  .helper-title { font-family: -apple-system, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-lt); margin-bottom: 8px; }
+  .model-chip-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+  .model-chip {
+    border: 1px solid var(--border); background: var(--white); border-radius: 3px;
+    padding: 9px 10px; cursor: pointer; text-align: left;
+    font-family: -apple-system, sans-serif; font-size: 12px; color: var(--ink-mid);
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .model-chip:hover, .model-chip.active { border-color: var(--cardinal); background: #FEF5F5; color: var(--ink); }
+  .model-chip strong { display: block; color: var(--ink); font-size: 13px; margin-bottom: 2px; }
+  .model-guide {
+    margin-top: 10px; padding: 10px 12px; border-left: 3px solid var(--cardinal);
+    background: #FEF5F5; font-family: -apple-system, sans-serif; font-size: 12px;
+    color: var(--ink-mid); line-height: 1.5; border-radius: 2px;
+  }
+  .model-guide strong { color: var(--ink); display: block; font-size: 13px; margin-bottom: 3px; }
+  .entry-mode-row { display: flex; gap: 8px; align-items: center; margin: 8px 0 6px; flex-wrap: wrap; }
+  .entry-mode-label { font-family: -apple-system, sans-serif; font-size: 11px; color: var(--ink-lt); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .mini-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 3px; overflow: hidden; }
+  .mini-toggle button { padding: 4px 8px; border: 0; background: var(--white); color: var(--ink-lt); cursor: pointer; font-family: -apple-system, sans-serif; font-size: 11px; }
+  .mini-toggle button.active { background: var(--cardinal); color: #fff; font-weight: 600; }
+  .race-time-panel { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-lt); }
+  .race-time-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .race-time-row label { font-family: -apple-system, sans-serif; font-size: 10px; color: var(--ink-lt); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 3px; }
+  .use-time-btn, .action-btn, .secondary-btn {
+    border: 1px solid var(--cardinal); border-radius: 3px; background: var(--cardinal);
+    color: #fff; font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 600;
+    padding: 8px 10px; cursor: pointer;
+  }
+  .use-time-btn { margin-top: 8px; }
+  .secondary-btn { background: var(--white); color: var(--cardinal); }
+  .result-meta {
+    margin: -0.75rem 0 1.25rem; background: var(--white); border: 0.5px solid var(--border);
+    border-radius: 4px; padding: 12px 14px; font-family: -apple-system, sans-serif;
+    font-size: 12px; color: var(--ink-mid); line-height: 1.6;
+  }
+  .result-meta strong { color: var(--ink); }
+  .warning-box {
+    display: none; margin-bottom: 1.25rem; background: #FFF8E5; border: 1px solid #E6C66A;
+    border-radius: 4px; padding: 12px 14px; font-family: -apple-system, sans-serif;
+    font-size: 12px; color: #5D4600; line-height: 1.5;
+  }
+  .warning-box ul { margin-left: 18px; }
+  .disclaimer-box {
+    margin-bottom: 1.25rem; background: var(--white); border: 0.5px solid var(--border);
+    border-radius: 4px; padding: 12px 14px; font-family: -apple-system, sans-serif;
+    font-size: 11px; color: var(--ink-lt); line-height: 1.5;
+  }
+  .actions-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .saved-table { width: 100%; border-collapse: collapse; font-family: -apple-system, sans-serif; font-size: 12px; }
+  .saved-table th, .saved-table td { border-bottom: 1px solid var(--border-lt); padding: 8px 6px; text-align: left; vertical-align: top; }
+  .saved-table th { color: var(--ink-lt); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 10px; }
+  .saved-empty { font-family: -apple-system, sans-serif; font-size: 12px; color: var(--ink-lt); padding: 1rem 1.25rem; }
+  @media (max-width: 540px) {
+    .model-chip-grid { grid-template-columns: 1fr; }
+    .race-time-row { grid-template-columns: 1fr 1fr 1fr; }
+    .actions-row { flex-direction: column; }
+    .action-btn, .secondary-btn { width: 100%; }
+  }
+
+  /* ─── Footer ─── */
+  .site-footer { background: var(--cardinal-dk); color: rgba(255,255,255,0.5); text-align: center; padding: 1.25rem 2rem; font-family: -apple-system, sans-serif; font-size: 11px; line-height: 1.7; margin-top: 1rem; }
+  .site-footer a { color: rgba(255,255,255,0.65); text-decoration: none; }
+  .site-footer strong { color: rgba(255,255,255,0.8); }
+
+  @media (max-width: 540px) {
+    .grid { grid-template-columns: 1fr; }
+    .field.full { grid-column: span 1; }
+    .result-card { flex-direction: column; gap: 1rem; align-items: flex-start; }
+    .cat-label, .cat-value, .ref-note { text-align: left; }
+    .hero h1 { font-size: 22px; }
+    .unit-toggle-bar { gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div>
+      <div class="logo-stanford">Stanford</div>
+      <div class="logo-sub">University</div>
+    </div>
+    <div class="header-divider"></div>
+    <span class="header-title">ELITE Study &nbsp;·&nbsp; VO₂max Calculator v4</span>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">ELITE Study Research Tool &nbsp;·&nbsp; v4.0</p>
+    <h1>ELITE Predicted VO<sub style="font-size:0.6em">2</sub>max Calculator</h1>
+    <p>Regression-based estimates of maximal aerobic capacity derived from the ELITE Study cohort. Select the equation that best matches your available athlete data.</p>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Model selection -->
+  <div class="card">
+    <div class="card-header"><div class="card-header-dot"></div><span class="card-header-label">Model Selection</span></div>
+    <div class="card-body">
+      <div class="eq-select-wrap">
+        <label>Select model type</label>
+        <select class="eq-picker" id="eq-picker">
+          <option value="1500m">1500m race pace — lowest RMSE (N=271)</option>
+          <option value="mile">Mile race pace — smallest sample (N=168)</option>
+          <option value="5k">5K race pace (N=440)</option>
+          <option value="10k">10K race pace (N=315)</option>
+          <option value="half">Half marathon race pace — highest R² (N=372)</option>
+          <option value="marathon">Marathon race pace (N=436)</option>
+          <option value="best">Best available race pace (N=962)</option>
+          <option value="training_only">Training/demographics only — largest sample, no race pace (N=1,595)</option>
+        </select>
+        <div class="model-guide" id="model-guide"></div>
+      </div>
+      <div class="eq-stats" id="eq-stats"></div>
+    </div>
+  </div>
+
+  <!-- Athlete inputs -->
+  <div class="card">
+    <div class="card-header"><div class="card-header-dot"></div><span class="card-header-label">Athlete Inputs</span></div>
+    <div class="card-body">
+
+      <!-- Unit toggles -->
+      <div class="unit-toggle-bar">
+        <span>Units</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:var(--ink-mid);font-family:-apple-system,sans-serif;">Height</span>
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="btn-cm" onclick="setHeightUnit('cm')">cm</button>
+            <button class="toggle-btn" id="btn-ftin" onclick="setHeightUnit('ftin')">ft / in</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:var(--ink-mid);font-family:-apple-system,sans-serif;">Weight</span>
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="btn-kg" onclick="setWeightUnit('kg')">kg</button>
+            <button class="toggle-btn" id="btn-lbs" onclick="setWeightUnit('lbs')">lbs</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:var(--ink-mid);font-family:-apple-system,sans-serif;">Pace</span>
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="btn-minmi" onclick="setPaceUnit('minmi')">min/mi</button>
+            <button class="toggle-btn" id="btn-minkm" onclick="setPaceUnit('minkm')">min/km</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" id="fields-grid">
+
+        <!-- Sex -->
+        <div class="field" id="f-sex">
+          <span class="field-label">Sex assigned at birth</span>
+          <select class="field-select" id="sex">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+
+        <!-- Age -->
+        <div class="field" id="f-age">
+          <span class="field-label">Age (years)</span>
+          <input type="number" id="age" value="27" min="10" max="80" />
+        </div>
+
+        <!-- Training hrs -->
+        <div class="field" id="f-hrs">
+          <span class="field-label">Avg. training hours/week &nbsp;<span class="val-display" id="hrs-out">7</span></span>
+          <input type="range" id="hrs" min="0" max="40" value="7" step="1" />
+        </div>
+
+        <!-- Years competing -->
+        <div class="field" id="f-yrs">
+          <span class="field-label">Years competing &nbsp;<span class="val-display" id="yrs-out">2</span></span>
+          <input type="range" id="yrs" min="0" max="40" value="2" step="1" />
+        </div>
+
+        <!-- Height cm -->
+        <div class="field" id="f-height-cm">
+          <span class="field-label">Height (cm)</span>
+          <input type="number" id="height-cm" value="178" min="100" max="250" step="0.1" />
+        </div>
+
+        <!-- Height ft+in -->
+        <div class="field hidden" id="f-height-ftin">
+          <span class="field-label">Height (ft / in)</span>
+          <div class="ft-in-row">
+            <input type="number" id="height-ft" value="5" min="3" max="8" step="1" placeholder="ft" style="width:60px;" />
+            <span class="ft-label">ft</span>
+            <input type="number" id="height-in" value="10" min="0" max="11" step="0.5" placeholder="in" />
+            <span class="ft-label">in</span>
+          </div>
+        </div>
+
+        <!-- Weight kg -->
+        <div class="field" id="f-weight-kg">
+          <span class="field-label">Body weight (kg)</span>
+          <input type="number" id="weight-kg" value="75" min="30" max="250" step="0.1" />
+        </div>
+
+        <!-- Weight lbs -->
+        <div class="field hidden" id="f-weight-lbs">
+          <span class="field-label">Body weight (lbs)</span>
+          <input type="number" id="weight-lbs" value="165" min="66" max="550" step="0.5" />
+        </div>
+
+        <!-- BMI -->
+        <div class="field full" id="f-bmi">
+          <span class="field-label">Body mass index (BMI)</span>
+          <input type="number" id="bmi" value="23.7" min="10" max="60" step="0.1" readonly style="background:#f0f4f0;color:var(--ink-mid);cursor:default;" />
+          <p class="hint">Automatically calculated from height and weight. You can override by typing a value directly.</p>
+        </div>
+
+        <!-- 5K pace -->
+        <div class="field full hidden" id="f-5k">
+          <span class="field-label">5K race pace <span id="pace-unit-label-5k" style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;">(min/mi — decimal)</span></span>
+          <input type="number" id="pace5k" value="6.42" min="2" max="25" step="0.01" />
+          <span class="pace-hint-toggle" onclick="togglePaceRef('ref5k')">Show pace conversion chart</span>
+          <div class="pace-ref" id="ref5k">
+            <table id="pace-table-5k"></table>
+          </div>
+        </div>
+
+        <!-- 10K pace -->
+        <div class="field full hidden" id="f-10k">
+          <span class="field-label">10K race pace <span id="pace-unit-label-10k" style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;">(min/mi — decimal)</span></span>
+          <input type="number" id="pace10k" value="6.92" min="2" max="25" step="0.01" />
+          <span class="pace-hint-toggle" onclick="togglePaceRef('ref10k')">Show pace conversion chart</span>
+          <div class="pace-ref" id="ref10k">
+            <table id="pace-table-10k"></table>
+          </div>
+        </div>
+
+        <!-- Half marathon pace -->
+        <div class="field full hidden" id="f-hm">
+          <span class="field-label">Half marathon race pace <span id="pace-unit-label-hm" style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;">(min/mi — decimal)</span></span>
+          <input type="number" id="pacehm" value="7.50" min="2" max="25" step="0.01" />
+          <span class="pace-hint-toggle" onclick="togglePaceRef('refhm')">Show pace conversion chart</span>
+          <div class="pace-ref" id="refhm">
+            <table id="pace-table-hm"></table>
+          </div>
+        </div>
+
+        <!-- Marathon pace -->
+        <div class="field full hidden" id="f-marathon">
+          <span class="field-label">Marathon race pace <span id="pace-unit-label-marathon" style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;">(min/mi — decimal)</span></span>
+          <input type="number" id="pacem" value="8.00" min="2" max="25" step="0.01" />
+          <span class="pace-hint-toggle" onclick="togglePaceRef('refmarathon')">Show pace conversion chart</span>
+          <div class="pace-ref" id="refmarathon">
+            <table id="pace-table-marathon"></table>
+          </div>
+        </div>
+
+        <!-- 1500m pace -->
+        <div class="field full hidden" id="f-1500m">
+          <span class="field-label">1500m race pace <span id="pace-unit-label-1500m" style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;">(min/mi — decimal)</span></span>
+          <input type="number" id="pace1500m" value="5.33" min="2" max="25" step="0.01" />
+          <span class="pace-hint-toggle" onclick="togglePaceRef('ref1500m')">Show pace conversion chart</span>
+          <div class="pace-ref" id="ref1500m">
+            <table id="pace-table-1500m"></table>
+          </div>
+        </div>
+
+        <!-- Mile pace -->
+        <div class="field full hidden" id="f-mile">
+          <span class="field-label">Mile race pace <span id="pace-unit-label-mile" style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;">(min/mi — decimal)</span></span>
+          <input type="number" id="pacemile" value="5.50" min="2" max="25" step="0.01" />
+          <span class="pace-hint-toggle" onclick="togglePaceRef('refmile')">Show pace conversion chart</span>
+          <div class="pace-ref" id="refmile">
+            <table id="pace-table-mile"></table>
+          </div>
+        </div>
+
+        <!-- Best available pace -->
+        <div class="field full hidden" id="f-best-pace">
+          <span class="field-label">Best available race pace <span id="pace-unit-label-best" style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;">(min/mi — decimal)</span></span>
+          <input type="number" id="bestpace" value="6.42" min="2" max="25" step="0.01" />
+          <span class="pace-hint-toggle" onclick="togglePaceRef('refbest')">Show pace conversion chart</span>
+          <div class="pace-ref" id="refbest">
+            <table id="pace-table-best"></table>
+          </div>
+        </div>
+
+        <div class="field full hidden" id="f-best-source">
+          <span class="field-label">Race distance for best pace</span>
+          <select class="field-select" id="bestsource">
+            <option value="5k">5K</option>
+            <option value="10k">10K</option>
+            <option value="hm">Half marathon</option>
+            <option value="marathon">Marathon</option>
+            <option value="mile">Mile</option>
+            <option value="1500m">1500m</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-card">
+    <div>
+      <p class="result-label">Predicted VO₂max</p>
+      <p class="result-value" id="result">—</p>
+      <p class="result-unit">mL · kg⁻¹ · min⁻¹</p>
+    </div>
+    <div>
+      <p class="cat-label">Performance tier</p>
+      <p class="cat-value" id="category">—</p>
+      <p class="ref-note" id="range-note"></p>
+    </div>
+  </div>
+
+  <div class="result-meta" id="result-meta"></div>
+  <div class="warning-box" id="warning-box"></div>
+
+  <div class="actions-row">
+    <button type="button" class="action-btn" onclick="copyResult()">Copy result</button>
+    <button type="button" class="secondary-btn" onclick="saveEstimate()">Save estimate for comparison</button>
+    <button type="button" class="secondary-btn" onclick="resetInputs()">Reset inputs</button>
+  </div>
+
+  <div class="disclaimer-box">
+    <strong>Research use only.</strong> This estimate is derived from ELITE Study regression models and is not a clinical diagnostic measurement or a replacement for laboratory VO₂max testing. RMSE is shown as an approximate model-error guide, not a formal individual prediction interval.
+  </div>
+
+  <!-- Breakdown -->
+  <div class="card">
+    <div class="card-header"><div class="card-header-dot"></div><span class="card-header-label">Calculation details</span></div>
+    <div class="card-body" style="padding:0;">
+      <div class="breakdown" id="breakdown"></div>
+    </div>
+  </div>
+
+  <div class="card" id="saved-card">
+    <div class="card-header"><div class="card-header-dot"></div><span class="card-header-label">Saved estimate comparison</span></div>
+    <div class="card-body" style="padding:0;">
+      <div id="saved-estimates"><p class="saved-empty">No saved estimates yet. Choose a model, enter values, then save the estimate to compare it with another model or race entry.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="site-footer">
+  <strong>ELITE Study</strong> &nbsp;·&nbsp; Wu Tsai Human Performance Alliance at Stanford University<br>
+  <a href="https://elite.stanford.edu">elite.stanford.edu</a> &nbsp;·&nbsp; For research use only. Not a clinical diagnostic tool. v4.0
+</footer>
+
+<script>
+
+
+// ─── State ───────────────────────────────────────────────
+let heightUnit = 'cm';   // 'cm' | 'ftin'
+let weightUnit = 'kg';   // 'kg' | 'lbs'
+let paceUnit   = 'minmi'; // 'minmi' | 'minkm'
+let bmiOverride = false;
+
+// ─── Equations ───────────────────────────────────────────
+const EQUATIONS = {
+  training_only: {
+    label:'Training/demographics only', n:1595, rmse:4.64, r2:0.575, best:false, usesBMI:true,
+    fields:['f-sex','f-age','f-bmi','f-hrs','f-yrs','f-height','f-weight'],
+    eqHTML:`<span class="eq-title">VO2max</span> = 86.787<br>
+      &nbsp;&nbsp;&minus; 10.133 &times; <span class="c-red">Sex (Female=1)</span><br>
+      &nbsp;&nbsp;&minus; 0.05633 &times; <span class="c-green">Age (years)</span><br>
+      &nbsp;&nbsp;&minus; 0.6527 &times; <span class="c-purple">BMI (kg/m²)</span><br>
+      &nbsp;&nbsp;+ 0.5855 &times; <span class="c-amber">Avg. training hours/week</span><br>
+      &nbsp;&nbsp;&minus; 0.01007 &times; <span class="c-amber">Avg. training hours/week&sup2;</span><br>
+      &nbsp;&nbsp;&minus; 0.001385 &times; <span class="c-coral">Years competing</span><br>
+      &nbsp;&nbsp;+ 0.08778 &times; <span class="c-teal">Body weight (kg)</span><br>
+      &nbsp;&nbsp;&minus; 0.06413 &times; <span class="c-teal">Height (cm)</span>`,
+    calc:(v)=>({ intercept:86.787037, sex:-10.132833*(v.sex==='female'?1:0), age:-0.056332*v.age, bmi:-0.652675*v.bmi, hrs:0.585543*v.hrs, hrs2:-0.010068*v.hrs*v.hrs, yrs:-0.001385*v.yrs, weight:0.087782*v.weightKg, height:-0.064125*v.heightCm })
+  },
+  '5k': {
+    label:'5K race pace', n:440, rmse:4.968, r2:0.501, best:false, usesBMI:true,
+    fields:['f-sex','f-age','f-bmi','f-hrs','f-yrs','f-weight','f-5k'],
+    eqHTML:`<span class="eq-title">VO2max</span> = 91.595<br>
+      &nbsp;&nbsp;+ 6.568 &times; <span class="c-blue">Sex (Male=1)</span><br>
+      &nbsp;&nbsp;&minus; 0.01499 &times; <span class="c-green">Age (years)</span><br>
+      &nbsp;&nbsp;&minus; 0.004301 &times; <span class="c-purple">BMI (kg/m²)</span><br>
+      &nbsp;&nbsp;+ 0.4233 &times; <span class="c-amber">Avg. training hours/week</span><br>
+      &nbsp;&nbsp;&minus; 0.01081 &times; <span class="c-amber">Avg. training hours/week&sup2;</span><br>
+      &nbsp;&nbsp;&minus; 0.05487 &times; <span class="c-coral">Years competing</span><br>
+      &nbsp;&nbsp;&minus; 0.09280 &times; <span class="c-teal">Body weight (kg)</span><br>
+      &nbsp;&nbsp;&minus; 4.637 &times; <span class="c-red">5K race pace (min/mi)</span>`,
+    calc:(v)=>({ intercept:91.595053, sex:6.568276*(v.sex==='male'?1:0), age:-0.01499*v.age, bmi:-0.004301*v.bmi, hrs:0.423272*v.hrs, hrs2:-0.010807*v.hrs*v.hrs, yrs:-0.054873*v.yrs, weight:-0.092796*v.weightKg, pace:-4.637349*v.pace5kMi })
+  },
+  '10k': {
+    label:'10K race pace', n:315, rmse:3.734, r2:0.635, best:false, usesBMI:false,
+    fields:['f-sex','f-age','f-height','f-10k'],
+    eqHTML:`<span class="eq-title">VO2max</span> = 93.229<br>
+      &nbsp;&nbsp;&minus; 5.777 &times; <span class="c-red">Sex (Female=1)</span><br>
+      &nbsp;&nbsp;&minus; 0.07412 &times; <span class="c-green">Age (years)</span><br>
+      &nbsp;&nbsp;+ 0.01144 &times; <span class="c-teal">Height (cm)</span><br>
+      &nbsp;&nbsp;&minus; 4.283 &times; <span class="c-red">10K race pace (min/mi)</span>`,
+    calc:(v)=>({ intercept:93.229245, sex:-5.777313*(v.sex==='female'?1:0), age:-0.074119*v.age, height:0.011444*v.heightCm, pace:-4.283427*v.pace10kMi })
+  },
+  half: {
+    label:'Half marathon race pace', n:372, rmse:3.534, r2:0.754, best:true, usesBMI:true,
+    fields:['f-sex','f-age','f-bmi','f-hrs','f-yrs','f-weight','f-hm'],
+    eqHTML:`<span class="eq-title">VO2max</span> = 88.791<br>
+      &nbsp;&nbsp;&minus; 8.495 &times; <span class="c-red">Sex (Female=1)</span><br>
+      &nbsp;&nbsp;&minus; 0.07458 &times; <span class="c-green">Age (years)</span><br>
+      &nbsp;&nbsp;&minus; 0.02194 &times; <span class="c-purple">BMI (kg/m²)</span><br>
+      &nbsp;&nbsp;+ 0.4659 &times; <span class="c-amber">Avg. training hours/week</span><br>
+      &nbsp;&nbsp;&minus; 0.008521 &times; <span class="c-amber">Avg. training hours/week&sup2;</span><br>
+      &nbsp;&nbsp;&minus; 0.009022 &times; <span class="c-coral">Years competing</span><br>
+      &nbsp;&nbsp;&minus; 0.1016 &times; <span class="c-teal">Body weight (kg)</span><br>
+      &nbsp;&nbsp;&minus; 2.309 &times; <span class="c-red">Half marathon race pace (min/mi)</span>`,
+    calc:(v)=>({ intercept:88.791452, sex:-8.494682*(v.sex==='female'?1:0), age:-0.074576*v.age, bmi:-0.021941*v.bmi, hrs:0.465863*v.hrs, hrs2:-0.008521*v.hrs*v.hrs, yrs:-0.009022*v.yrs, weight:-0.101634*v.weightKg, pace:-2.309305*v.pacehmMi })
+  },
+  marathon: {
+    label:'Marathon race pace', n:436, rmse:3.402, r2:0.698, best:false, usesBMI:true,
+    fields:['f-sex','f-age','f-bmi','f-hrs','f-yrs','f-weight','f-marathon'],
+    eqHTML:`<span class="eq-title">VO2max</span> = 84.494<br>
+      &nbsp;&nbsp;&minus; 7.891 &times; <span class="c-red">Sex (Female=1)</span><br>
+      &nbsp;&nbsp;&minus; 0.02603 &times; <span class="c-green">Age (years)</span><br>
+      &nbsp;&nbsp;&minus; 0.2160 &times; <span class="c-purple">BMI (kg/m²)</span><br>
+      &nbsp;&nbsp;+ 0.3152 &times; <span class="c-amber">Avg. training hours/week</span><br>
+      &nbsp;&nbsp;&minus; 0.005992 &times; <span class="c-amber">Avg. training hours/week&sup2;</span><br>
+      &nbsp;&nbsp;+ 0.004470 &times; <span class="c-coral">Years competing</span><br>
+      &nbsp;&nbsp;+ 0.006437 &times; <span class="c-teal">Body weight (kg)</span><br>
+      &nbsp;&nbsp;&minus; 2.044 &times; <span class="c-red">Marathon race pace (min/mi)</span>`,
+    calc:(v)=>({ intercept:84.494347, sex:-7.89084*(v.sex==='female'?1:0), age:-0.026034*v.age, bmi:-0.216024*v.bmi, hrs:0.315194*v.hrs, hrs2:-0.005992*v.hrs*v.hrs, yrs:0.00447*v.yrs, weight:0.006437*v.weightKg, pace:-2.044477*v.pacemMi })
+  },
+  '1500m': {
+    label:'1500m race pace', n:271, rmse:3.236, r2:0.696, best:true, usesBMI:true,
+    fields:['f-sex','f-age','f-bmi','f-hrs','f-yrs','f-height','f-1500m'],
+    eqHTML:`<span class="eq-title">VO2max</span> = 98.241<br>
+      &nbsp;&nbsp;+ 4.451 &times; <span class="c-blue">Sex (Male=1)</span><br>
+      &nbsp;&nbsp;&minus; 0.02339 &times; <span class="c-green">Age (years)</span><br>
+      &nbsp;&nbsp;&minus; 0.2534 &times; <span class="c-purple">BMI (kg/m²)</span><br>
+      &nbsp;&nbsp;+ 0.02535 &times; <span class="c-amber">Avg. training hours/week</span><br>
+      &nbsp;&nbsp;&minus; 0.04065 &times; <span class="c-coral">Years competing</span><br>
+      &nbsp;&nbsp;+ 0.004019 &times; <span class="c-teal">Height (cm)</span><br>
+      &nbsp;&nbsp;&minus; 6.201 &times; <span class="c-red">1500m race pace (min/mi)</span>`,
+    calc:(v)=>({ intercept:98.241495, sex:4.450929*(v.sex==='male'?1:0), age:-0.023389*v.age, bmi:-0.253429*v.bmi, hrs:0.025353*v.hrs, yrs:-0.04065*v.yrs, height:0.004019*v.heightCm, pace:-6.200797*v.pace1500mMi })
+  },
+  mile: {
+    label:'Mile race pace', n:168, rmse:3.931, r2:0.531, best:false, usesBMI:true,
+    fields:['f-sex','f-bmi','f-hrs','f-yrs','f-weight','f-mile'],
+    eqHTML:`<span class="eq-title">VO2max</span> = 113.632<br>
+      &nbsp;&nbsp;&minus; 4.955 &times; <span class="c-red">Sex (Female=1)</span><br>
+      &nbsp;&nbsp;&minus; 0.1196 &times; <span class="c-purple">BMI (kg/m²)</span><br>
+      &nbsp;&nbsp;&minus; 0.04672 &times; <span class="c-amber">Avg. training hours/week</span><br>
+      &nbsp;&nbsp;&minus; 0.04518 &times; <span class="c-coral">Years competing</span><br>
+      &nbsp;&nbsp;&minus; 0.1079 &times; <span class="c-teal">Body weight (kg)</span><br>
+      &nbsp;&nbsp;&minus; 7.432 &times; <span class="c-red">Mile race pace (min/mi)</span>`,
+    calc:(v)=>({ intercept:113.632217, sex:-4.955245*(v.sex==='female'?1:0), bmi:-0.119626*v.bmi, hrs:-0.046723*v.hrs, yrs:-0.045183*v.yrs, weight:-0.107906*v.weightKg, pace:-7.431791*v.pacemileMi })
+  },
+  best: {
+    label:'Best available race pace', n:962, rmse:4.202, r2:0.605, best:false, usesBMI:true,
+    fields:['f-sex','f-age','f-bmi','f-hrs','f-yrs','f-weight','f-best-pace','f-best-source'],
+    eqHTML:`<span class="eq-title">VO2max</span> = 81.285<br>
+      &nbsp;&nbsp;+ 7.141 &times; <span class="c-blue">Sex (Male=1)</span><br>
+      &nbsp;&nbsp;&minus; 0.05133 &times; <span class="c-green">Age (years)</span><br>
+      &nbsp;&nbsp;&minus; 0.05712 &times; <span class="c-purple">BMI (kg/m²)</span><br>
+      &nbsp;&nbsp;+ 0.3547 &times; <span class="c-amber">Avg. training hours/week</span><br>
+      &nbsp;&nbsp;&minus; 0.007692 &times; <span class="c-amber">Avg. training hours/week&sup2;</span><br>
+      &nbsp;&nbsp;&minus; 0.004664 &times; <span class="c-coral">Years competing</span><br>
+      &nbsp;&nbsp;&minus; 0.02968 &times; <span class="c-teal">Body weight (kg)</span><br>
+      &nbsp;&nbsp;&minus; 3.189 &times; <span class="c-red">Best available race pace (min/mi)</span><br>
+      &nbsp;&nbsp;+ source distance adjustment`,
+    calc:(v)=>{
+      const src = v.bestsource;
+      return { intercept:81.284787, sex:7.140725*(v.sex==='male'?1:0), age:-0.051332*v.age, bmi:-0.057115*v.bmi, hrs:0.354738*v.hrs, hrs2:-0.007692*v.hrs*v.hrs, yrs:-0.004664*v.yrs, weight:-0.029675*v.weightKg, pace:-3.189172*v.bestpaceMi, srcM:2.707321*(src==='marathon'?1:0), srcHM:1.685801*(src==='hm'?1:0), srcMile:-2.791507*(src==='mile'?1:0), src1500:-2.547735*(src==='1500m'?1:0), src10k:0.520403*(src==='10k'?1:0) };
+    }
+  }
+};
+// Actual DOM field IDs that need to be hidden/shown when switching models.
+// Note: f-height and f-weight are model aliases, not real DOM IDs.
+const ALL_FIELDS = ['f-sex','f-age','f-hrs','f-yrs',
+  'f-height-cm','f-height-ftin','f-weight-kg','f-weight-lbs','f-bmi',
+  'f-5k','f-10k','f-hm','f-marathon','f-1500m','f-mile','f-best-pace','f-best-source'];
+
+// Unit-aware display labels. Model calculations remain in their original units:
+// height = cm, weight = kg, pace = min/mi. Inputs are converted before calculation.
+function heightTermLabel(titleCase = false) {
+  const base = heightUnit === 'ftin' ? 'height (ft/in → cm)' : 'height (cm)';
+  return titleCase ? base.charAt(0).toUpperCase() + base.slice(1) : base;
+}
+function weightTermLabel(titleCase = false) {
+  const base = weightUnit === 'lbs' ? 'body weight (lbs → kg)' : 'body weight (kg)';
+  return titleCase ? base.charAt(0).toUpperCase() + base.slice(1) : base;
+}
+function paceTermLabel(prefix = 'race pace') {
+  return paceUnit === 'minkm' ? `${prefix} (min/km → min/mi)` : `${prefix} (min/mi)`;
+}
+function getTermLabel(k) {
+  const labels = {
+    intercept:'intercept', sex:'sex', age:'age (years)',
+    hrs:'avg. training hours/week', hrs2:'avg. training hours/week²',
+    yrs:'years competing', height:heightTermLabel(), weight:weightTermLabel(),
+    bmi:'BMI (kg/m²)', pace:paceTermLabel('race pace'),
+    srcM:'source adj: marathon', srcHM:'source adj: half marathon',
+    srcMile:'source adj: mile', src1500:'source adj: 1500m', src10k:'source adj: 10K',
+  };
+  return labels[k] || k;
+}
+
+function modelPaceLabel(key) {
+  const labels = {
+    '5k': '5K race pace',
+    '10k': '10K race pace',
+    half: 'Half marathon race pace',
+    marathon: 'Marathon race pace',
+    '1500m': '1500m race pace',
+    mile: 'Mile race pace',
+    best: 'Best available race pace'
+  };
+  return paceTermLabel(labels[key] || 'race pace');
+}
+function trimNumber(n, digits = 6) {
+  if (!isFinite(n)) return '—';
+  return Number(n.toFixed(digits)).toString();
+}
+function fmtSignedValue(n, digits = 4) {
+  if (!isFinite(n)) return '—';
+  const sign = n < 0 ? '−' : '';
+  return sign + Math.abs(n).toFixed(digits);
+}
+function fmtCoefficient(n) {
+  if (!isFinite(n)) return '—';
+  const sign = n < 0 ? '−' : '';
+  return sign + trimNumber(Math.abs(n), 6);
+}
+function fmtInputValue(n, digits = 2) {
+  if (!isFinite(n)) return '—';
+  if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
+  return trimNumber(n, digits);
+}
+const TERM_DETAILS = {
+  training_only: {
+    intercept:{label:'Intercept', coef:86.787037, input:null},
+    sex:{label:'Sex (Female=1)', coef:-10.132833, input:v=>v.sex==='female'?1:0},
+    age:{label:'Age (years)', coef:-0.056332, input:v=>v.age},
+    bmi:{label:'BMI (kg/m²)', coef:-0.652675, input:v=>v.bmi},
+    hrs:{label:'Avg. training hours/week', coef:0.585543, input:v=>v.hrs},
+    hrs2:{label:'Avg. training hours/week²', coef:-0.010068, input:v=>v.hrs*v.hrs},
+    yrs:{label:'Years competing', coef:-0.001385, input:v=>v.yrs},
+    weight:{label:()=>weightTermLabel(true), coef:0.087782, input:v=>v.weightKg},
+    height:{label:()=>heightTermLabel(true), coef:-0.064125, input:v=>v.heightCm}
+  },
+  '1500m': {
+    intercept:{label:'Intercept', coef:98.241495, input:null},
+    sex:{label:'Sex (Male=1)', coef:4.450929, input:v=>v.sex==='male'?1:0},
+    age:{label:'Age (years)', coef:-0.023389, input:v=>v.age},
+    bmi:{label:'BMI (kg/m²)', coef:-0.253429, input:v=>v.bmi},
+    hrs:{label:'Avg. training hours/week', coef:0.025353, input:v=>v.hrs},
+    yrs:{label:'Years competing', coef:-0.04065, input:v=>v.yrs},
+    height:{label:()=>heightTermLabel(true), coef:0.004019, input:v=>v.heightCm},
+    pace:{label:()=>modelPaceLabel('1500m'), coef:-6.200797, input:v=>v.pace1500mMi}
+  },
+  mile: {
+    intercept:{label:'Intercept', coef:113.632217, input:null},
+    sex:{label:'Sex (Female=1)', coef:-4.955245, input:v=>v.sex==='female'?1:0},
+    bmi:{label:'BMI (kg/m²)', coef:-0.119626, input:v=>v.bmi},
+    hrs:{label:'Avg. training hours/week', coef:-0.046723, input:v=>v.hrs},
+    yrs:{label:'Years competing', coef:-0.045183, input:v=>v.yrs},
+    weight:{label:()=>weightTermLabel(true), coef:-0.107906, input:v=>v.weightKg},
+    pace:{label:()=>modelPaceLabel('mile'), coef:-7.431791, input:v=>v.pacemileMi}
+  },
+  '5k': {
+    intercept:{label:'Intercept', coef:91.595053, input:null},
+    sex:{label:'Sex (Male=1)', coef:6.568276, input:v=>v.sex==='male'?1:0},
+    age:{label:'Age (years)', coef:-0.01499, input:v=>v.age},
+    bmi:{label:'BMI (kg/m²)', coef:-0.004301, input:v=>v.bmi},
+    hrs:{label:'Avg. training hours/week', coef:0.423272, input:v=>v.hrs},
+    hrs2:{label:'Avg. training hours/week²', coef:-0.010807, input:v=>v.hrs*v.hrs},
+    yrs:{label:'Years competing', coef:-0.054873, input:v=>v.yrs},
+    weight:{label:()=>weightTermLabel(true), coef:-0.092796, input:v=>v.weightKg},
+    pace:{label:()=>modelPaceLabel('5k'), coef:-4.637349, input:v=>v.pace5kMi}
+  },
+  '10k': {
+    intercept:{label:'Intercept', coef:93.229245, input:null},
+    sex:{label:'Sex (Female=1)', coef:-5.777313, input:v=>v.sex==='female'?1:0},
+    age:{label:'Age (years)', coef:-0.074119, input:v=>v.age},
+    height:{label:()=>heightTermLabel(true), coef:0.011444, input:v=>v.heightCm},
+    pace:{label:()=>modelPaceLabel('10k'), coef:-4.283427, input:v=>v.pace10kMi}
+  },
+  half: {
+    intercept:{label:'Intercept', coef:88.791452, input:null},
+    sex:{label:'Sex (Female=1)', coef:-8.494682, input:v=>v.sex==='female'?1:0},
+    age:{label:'Age (years)', coef:-0.074576, input:v=>v.age},
+    bmi:{label:'BMI (kg/m²)', coef:-0.021941, input:v=>v.bmi},
+    hrs:{label:'Avg. training hours/week', coef:0.465863, input:v=>v.hrs},
+    hrs2:{label:'Avg. training hours/week²', coef:-0.008521, input:v=>v.hrs*v.hrs},
+    yrs:{label:'Years competing', coef:-0.009022, input:v=>v.yrs},
+    weight:{label:()=>weightTermLabel(true), coef:-0.101634, input:v=>v.weightKg},
+    pace:{label:()=>modelPaceLabel('half'), coef:-2.309305, input:v=>v.pacehmMi}
+  },
+  marathon: {
+    intercept:{label:'Intercept', coef:84.494347, input:null},
+    sex:{label:'Sex (Female=1)', coef:-7.89084, input:v=>v.sex==='female'?1:0},
+    age:{label:'Age (years)', coef:-0.026034, input:v=>v.age},
+    bmi:{label:'BMI (kg/m²)', coef:-0.216024, input:v=>v.bmi},
+    hrs:{label:'Avg. training hours/week', coef:0.315194, input:v=>v.hrs},
+    hrs2:{label:'Avg. training hours/week²', coef:-0.005992, input:v=>v.hrs*v.hrs},
+    yrs:{label:'Years competing', coef:0.00447, input:v=>v.yrs},
+    weight:{label:()=>weightTermLabel(true), coef:0.006437, input:v=>v.weightKg},
+    pace:{label:()=>modelPaceLabel('marathon'), coef:-2.044477, input:v=>v.pacemMi}
+  },
+  best: {
+    intercept:{label:'Intercept', coef:81.284787, input:null},
+    sex:{label:'Sex (Male=1)', coef:7.140725, input:v=>v.sex==='male'?1:0},
+    age:{label:'Age (years)', coef:-0.051332, input:v=>v.age},
+    bmi:{label:'BMI (kg/m²)', coef:-0.057115, input:v=>v.bmi},
+    hrs:{label:'Avg. training hours/week', coef:0.354738, input:v=>v.hrs},
+    hrs2:{label:'Avg. training hours/week²', coef:-0.007692, input:v=>v.hrs*v.hrs},
+    yrs:{label:'Years competing', coef:-0.004664, input:v=>v.yrs},
+    weight:{label:()=>weightTermLabel(true), coef:-0.029675, input:v=>v.weightKg},
+    pace:{label:()=>modelPaceLabel('best'), coef:-3.189172, input:v=>v.bestpaceMi},
+    srcM:{label:'Source adjustment: Marathon', coef:2.707321, input:v=>v.bestsource==='marathon'?1:0},
+    srcHM:{label:'Source adjustment: Half marathon', coef:1.685801, input:v=>v.bestsource==='hm'?1:0},
+    srcMile:{label:'Source adjustment: Mile', coef:-2.791507, input:v=>v.bestsource==='mile'?1:0},
+    src1500:{label:'Source adjustment: 1500m', coef:-2.547735, input:v=>v.bestsource==='1500m'?1:0},
+    src10k:{label:'Source adjustment: 10K', coef:0.520403, input:v=>v.bestsource==='10k'?1:0}
+  }
+};
+function termEquationDisplay(modelKey, termKey, contribution, values) {
+  const detail = TERM_DETAILS[modelKey] && TERM_DETAILS[modelKey][termKey];
+  if (!detail) return { label: getTermLabel(termKey), expression: fmtSignedValue(contribution) };
+  const label = typeof detail.label === 'function' ? detail.label(values) : detail.label;
+  if (detail.input === null) {
+    return { label, expression: fmtCoefficient(detail.coef) };
+  }
+  const inputVal = detail.input(values);
+  return {
+    label,
+    expression: `${fmtCoefficient(detail.coef)} × ${fmtInputValue(inputVal)} = ${fmtSignedValue(contribution)}`
+  };
+}
+
+function applyUnitLabelsToEquation(html) {
+  const heightLabel = heightTermLabel(true);
+  const weightLabel = weightTermLabel(true);
+  return html
+    .replace(/Height \(cm\)/g, heightLabel)
+    .replace(/Body weight \(kg\)/g, weightLabel)
+    .replace(/5K race pace \(min\/mi\)/g, paceTermLabel('5K race pace'))
+    .replace(/10K race pace \(min\/mi\)/g, paceTermLabel('10K race pace'))
+    .replace(/Half marathon race pace \(min\/mi\)/g, paceTermLabel('Half marathon race pace'))
+    .replace(/Marathon race pace \(min\/mi\)/g, paceTermLabel('Marathon race pace'))
+    .replace(/1500m race pace \(min\/mi\)/g, paceTermLabel('1500m race pace'))
+    .replace(/Mile race pace \(min\/mi\)/g, paceTermLabel('Mile race pace'))
+    .replace(/Best available race pace \(min\/mi\)/g, paceTermLabel('Best available race pace'));
+}
+function refreshEquationDisplay() {
+  const picker = document.getElementById('eq-picker');
+  const display = document.getElementById('eq-display');
+  if (!picker || !display) return;
+  display.innerHTML = applyUnitLabelsToEquation(EQUATIONS[picker.value].eqHTML);
+}
+
+// ─── Unit conversion helpers ──────────────────────────────
+function getHeightCm() {
+  if (heightUnit === 'cm') {
+    return parseFloat(document.getElementById('height-cm').value) || 0;
+  } else {
+    const ft = parseFloat(document.getElementById('height-ft').value) || 0;
+    const inch = parseFloat(document.getElementById('height-in').value) || 0;
+    return (ft * 12 + inch) * 2.54;
+  }
+}
+function getWeightKg() {
+  if (weightUnit === 'kg') {
+    return parseFloat(document.getElementById('weight-kg').value) || 0;
+  } else {
+    return (parseFloat(document.getElementById('weight-lbs').value) || 0) * 0.453592;
+  }
+}
+
+// pace stored in display unit; convert to min/mi for equations
+function toMinMi(val) {
+  if (paceUnit === 'minmi') return val;
+  return val * 1.60934; // min/km → min/mi
+}
+
+function getVals() {
+  const heightCm = getHeightCm();
+  const weightKg = getWeightKg();
+  const autoBmi  = heightCm > 0 ? weightKg / Math.pow(heightCm / 100, 2) : 0;
+  const bmiVal   = bmiOverride
+    ? (parseFloat(document.getElementById('bmi').value) || autoBmi)
+    : autoBmi;
+  return {
+    sex:        document.getElementById('sex').value,
+    age:        parseFloat(document.getElementById('age').value) || 0,
+    hrs:        parseFloat(document.getElementById('hrs').value),
+    yrs:        parseFloat(document.getElementById('yrs').value),
+    heightCm,
+    weightKg,
+    bmi:        bmiVal,
+    pace5kMi:   toMinMi(parseFloat(document.getElementById('pace5k').value)    || 0),
+    pace10kMi:  toMinMi(parseFloat(document.getElementById('pace10k').value)   || 0),
+    pacehmMi:   toMinMi(parseFloat(document.getElementById('pacehm').value)    || 0),
+    pacemMi:    toMinMi(parseFloat(document.getElementById('pacem').value)     || 0),
+    pace1500mMi:toMinMi(parseFloat(document.getElementById('pace1500m').value) || 0),
+    pacemileMi: toMinMi(parseFloat(document.getElementById('pacemile').value)  || 0),
+    bestpaceMi: toMinMi(parseFloat(document.getElementById('bestpace').value)  || 0),
+    bestsource: document.getElementById('bestsource').value,
+  };
+}
+
+// ─── BMI auto-update ─────────────────────────────────────
+function updateBmi() {
+  if (!bmiOverride) {
+    const heightCm = getHeightCm();
+    const weightKg = getWeightKg();
+    if (heightCm > 0 && weightKg > 0) {
+      const autoBmi = weightKg / Math.pow(heightCm / 100, 2);
+      document.getElementById('bmi').value = autoBmi.toFixed(1);
+    }
+  }
+}
+
+// Allow manual BMI override
+document.getElementById('bmi').addEventListener('focus', () => { bmiOverride = true; document.getElementById('bmi').style.background = '#fff'; document.getElementById('bmi').style.cursor = 'text'; document.getElementById('bmi').removeAttribute('readonly'); });
+
+// ─── Pace conversion charts ───────────────────────────────
+const PACE_REFS = {
+  '5k':       [['4:00','2:29'],['4:30','2:48'],['5:00','3:06'],['5:30','3:25'],['6:00','3:44'],['6:30','4:02'],['7:00','4:21'],['7:30','4:40'],['8:00','4:58'],['8:30','5:17'],['9:00','5:36']],
+  '10k':      [['4:30','2:48'],['5:00','3:06'],['5:30','3:25'],['6:00','3:44'],['6:30','4:02'],['7:00','4:21'],['7:30','4:40'],['8:00','4:58'],['8:30','5:17'],['9:00','5:36'],['9:30','5:54']],
+  'hm':       [['5:00','3:06'],['5:30','3:25'],['6:00','3:44'],['6:30','4:02'],['7:00','4:21'],['7:30','4:40'],['8:00','4:58'],['8:30','5:17'],['9:00','5:36'],['10:00','6:13'],['11:00','6:50']],
+  'marathon': [['6:00','3:44'],['6:30','4:02'],['7:00','4:21'],['7:30','4:40'],['8:00','4:58'],['8:30','5:17'],['9:00','5:36'],['9:30','5:54'],['10:00','6:13'],['11:00','6:50'],['12:00','7:27']],
+  '1500m':    [['3:30','2:11'],['4:00','2:29'],['4:20','2:42'],['4:40','2:54'],['5:00','3:06'],['5:20','3:19'],['5:40','3:31'],['6:00','3:44'],['6:20','3:56'],['6:40','4:08'],['7:00','4:21']],
+  'mile':     [['3:50','2:23'],['4:00','2:29'],['4:20','2:42'],['4:40','2:54'],['5:00','3:06'],['5:20','3:19'],['5:40','3:31'],['6:00','3:44'],['6:20','3:56'],['6:40','4:08'],['7:00','4:21']],
+  'best':     [['4:00','2:29'],['5:00','3:06'],['6:00','3:44'],['7:00','4:21'],['8:00','4:58'],['9:00','5:36'],['10:00','6:13'],['11:00','6:50'],['12:00','7:27']],
+};
+
+function buildPaceTables() {
+  const keys = ['5k','10k','hm','marathon','1500m','mile','best'];
+  keys.forEach(k => {
+    const tbl = document.getElementById('pace-table-' + k);
+    if (!tbl) return;
+    const rows = PACE_REFS[k];
+    let html = `<tr style="font-weight:600;color:var(--ink-mid);border-bottom:1px solid var(--border)"><td>min/mi</td><td>min/km</td><td>decimal</td></tr>`;
+    rows.forEach(([mi, km]) => {
+      const [m, s] = mi.split(':').map(Number);
+      const dec = (m + s / 60).toFixed(2);
+      html += `<tr><td>${mi}</td><td>${km}</td><td>${dec}</td></tr>`;
+    });
+    tbl.innerHTML = html;
+  });
+}
+buildPaceTables();
+
+function togglePaceRef(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+// ─── Pace unit labels & input values ─────────────────────
+const PACE_IDS = ['5k','10k','hm','marathon','1500m','mile','best'];
+const PACE_INPUTS = { '5k':'pace5k','10k':'pace10k','hm':'pacehm','marathon':'pacem','1500m':'pace1500m','mile':'pacemile','best':'bestpace' };
+
+const PACE_DISTANCE_MILES = { '5k':3.10686, '10k':6.21371, 'hm':13.1094, 'marathon':26.2188, '1500m':0.932057, 'mile':1, 'best':3.10686 };
+const RACE_LABELS = { '5k':'5K', '10k':'10K', 'hm':'Half marathon', 'marathon':'Marathon', '1500m':'1500m', 'mile':'Mile', 'best':'Best available race' };
+const MODEL_GUIDES = {
+  training_only: { text:'Use this when race-performance data are not available. This model uses demographic, body size, and training variables and has the largest sample, but is less race-specific than the pace-based equations.' },
+  '5k': { text:'Use this if the athlete has a recent 5K race result plus training and body-weight data. Enter either decimal pace or full race time.' },
+  '10k': { text:'Use this if the athlete has a recent 10K result. This model only requires sex, age, height, and race pace/time, so it is useful when fewer inputs are available.' },
+  half: { text:'Use this if the athlete has a recent half marathon result and complete body-size/training inputs. This model had the highest R² among the listed equations.' },
+  marathon: { text:'Use this if the athlete has a recent marathon result. This model uses age, sex, training hours, height, BMI, and marathon pace/time, with a low validation RMSE.' },
+  '1500m': { text:'Use this for middle-distance athletes with a recent 1500m performance. This model had the lowest RMSE among the listed equations.' },
+  mile: { text:'Use this if the athlete has a recent mile result. Interpret with extra caution because this model has the smallest sample size.' },
+  best: { text:'Use this when you want to enter the best available race result and specify the source distance. You can also save estimates one at a time for comparison.' }
+};
+let lastCalculation = null;
+let savedEstimates = [];
+
+function refreshModelGuide() {
+  const key = document.getElementById('eq-picker').value;
+  const guide = MODEL_GUIDES[key];
+  const el = document.getElementById('model-guide');
+  if (!el || !guide) return;
+  el.innerHTML = `<strong>${EQUATIONS[key].label}</strong><span>${guide.text}</span>`;
+}
+function updateActiveModelChips() {
+  const key = document.getElementById('eq-picker').value;
+  document.querySelectorAll('.model-chip').forEach(btn => btn.classList.toggle('active', btn.dataset.model === key));
+}
+function wireModelChips() {
+  document.querySelectorAll('.model-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('eq-picker').value = btn.dataset.model;
+      updateEquation();
+    });
+  });
+}
+function getBestSourceDistanceKey() {
+  const el = document.getElementById('bestsource');
+  return el ? el.value : '5k';
+}
+function distanceForPaceKey(k) {
+  if (k === 'best') return PACE_DISTANCE_MILES[getBestSourceDistanceKey()] || PACE_DISTANCE_MILES['5k'];
+  return PACE_DISTANCE_MILES[k];
+}
+function decimalToMinSec(decimal) {
+  const mins = Math.floor(decimal);
+  const secs = Math.round((decimal - mins) * 60);
+  if (secs === 60) return `${mins + 1}:00`;
+  return `${mins}:${String(secs).padStart(2,'0')}`;
+}
+function enhancePaceTimeInputs() {
+  PACE_IDS.forEach(k => {
+    const input = document.getElementById(PACE_INPUTS[k]);
+    if (!input || document.getElementById(`race-time-panel-${k}`)) return;
+    const container = input.parentElement;
+    const modeRow = document.createElement('div');
+    modeRow.className = 'entry-mode-row';
+    modeRow.innerHTML = `
+      <span class="entry-mode-label">Entry mode</span>
+      <span class="mini-toggle">
+        <button type="button" class="active" id="mode-pace-${k}" onclick="setPaceEntryMode('${k}','pace')">Decimal pace</button>
+        <button type="button" id="mode-time-${k}" onclick="setPaceEntryMode('${k}','time')">Race time</button>
+      </span>`;
+    input.insertAdjacentElement('beforebegin', modeRow);
+    const panel = document.createElement('div');
+    panel.className = 'race-time-panel';
+    panel.id = `race-time-panel-${k}`;
+    panel.innerHTML = `
+      <div class="race-time-row">
+        <div><label>Hours</label><input type="number" id="time-h-${k}" min="0" max="9" step="1" value="0"></div>
+        <div><label>Minutes</label><input type="number" id="time-m-${k}" min="0" max="59" step="1" value="20"></div>
+        <div><label>Seconds</label><input type="number" id="time-s-${k}" min="0" max="59" step="1" value="0"></div>
+      </div>
+      <button type="button" class="use-time-btn" onclick="applyRaceTime('${k}')">Use race time</button>
+      <p class="hint" id="race-time-hint-${k}">Converts total race time to the selected pace unit, then the calculator converts internally to min/mi for the equation.</p>`;
+    const refToggle = container.querySelector('.pace-hint-toggle');
+    if (refToggle) refToggle.insertAdjacentElement('beforebegin', panel);
+    ['h','m','s'].forEach(part => {
+      const el = document.getElementById(`time-${part}-${k}`);
+      el.addEventListener('input', () => applyRaceTime(k, true));
+    });
+  });
+}
+function setPaceEntryMode(k, mode) {
+  const panel = document.getElementById(`race-time-panel-${k}`);
+  const input = document.getElementById(PACE_INPUTS[k]);
+  const paceBtn = document.getElementById(`mode-pace-${k}`);
+  const timeBtn = document.getElementById(`mode-time-${k}`);
+  if (!panel || !input) return;
+  panel.style.display = mode === 'time' ? 'block' : 'none';
+  input.style.display = mode === 'time' ? 'none' : 'block';
+  if (paceBtn) paceBtn.classList.toggle('active', mode === 'pace');
+  if (timeBtn) timeBtn.classList.toggle('active', mode === 'time');
+  if (mode === 'time') applyRaceTime(k, true);
+}
+function applyRaceTime(k, silent=false) {
+  const h = parseFloat(document.getElementById(`time-h-${k}`)?.value) || 0;
+  const m = parseFloat(document.getElementById(`time-m-${k}`)?.value) || 0;
+  const sec = parseFloat(document.getElementById(`time-s-${k}`)?.value) || 0;
+  const totalMin = h * 60 + m + sec / 60;
+  const distanceMi = distanceForPaceKey(k);
+  if (totalMin <= 0 || distanceMi <= 0) return;
+  const minMi = totalMin / distanceMi;
+  const displayPace = paceUnit === 'minkm' ? minMi / 1.60934 : minMi;
+  const input = document.getElementById(PACE_INPUTS[k]);
+  if (input) input.value = displayPace.toFixed(2);
+  const hint = document.getElementById(`race-time-hint-${k}`);
+  if (hint) hint.textContent = `Converted race time to ${displayPace.toFixed(2)} ${paceUnit === 'minkm' ? 'min/km' : 'min/mi'} (${decimalToMinSec(displayPace)} per ${paceUnit === 'minkm' ? 'km' : 'mile'}).`;
+  calc();
+}
+function refreshVisibleRaceTimeConversions() {
+  PACE_IDS.forEach(k => {
+    const panel = document.getElementById(`race-time-panel-${k}`);
+    if (panel && panel.style.display === 'block') applyRaceTime(k, true);
+  });
+}
+
+function updatePaceLabels() {
+  const unitLabel = paceUnit === 'minmi' ? '(min/mi — decimal)' : '(min/km — decimal)';
+  const hint = paceUnit === 'minmi'
+    ? 'e.g. 6:25 min/mi → 6 + 25/60 = 6.42'
+    : 'e.g. 3:59 min/km → 3 + 59/60 = 3.98';
+  PACE_IDS.forEach(k => {
+    const lbl = document.getElementById('pace-unit-label-' + k);
+    if (lbl) lbl.textContent = unitLabel;
+  });
+}
+
+// ─── Unit toggle handlers ─────────────────────────────────
+function setHeightUnit(unit) {
+  const prevCm = getHeightCm();
+  heightUnit = unit;
+  document.getElementById('btn-cm').classList.toggle('active', unit === 'cm');
+  document.getElementById('btn-ftin').classList.toggle('active', unit === 'ftin');
+  const showCm   = unit === 'cm';
+  const f_cm     = document.getElementById('f-height-cm');
+  const f_ftin   = document.getElementById('f-height-ftin');
+  const eqKey    = document.getElementById('eq-picker').value;
+  const needsH   = EQUATIONS[eqKey].fields.includes('f-height') || EQUATIONS[eqKey].usesBMI === true;
+  if (showCm) {
+    f_cm.classList.toggle('hidden', !needsH);
+    f_ftin.classList.add('hidden');
+    document.getElementById('height-cm').value = Math.round(prevCm);
+  } else {
+    f_ftin.classList.toggle('hidden', !needsH);
+    f_cm.classList.add('hidden');
+    const totalIn = prevCm / 2.54;
+    document.getElementById('height-ft').value = Math.floor(totalIn / 12);
+    document.getElementById('height-in').value = Math.round(totalIn % 12);
+  }
+  refreshEquationDisplay();
+  updateBmi(); calc();
+}
+
+function setWeightUnit(unit) {
+  const prevKg = getWeightKg();
+  weightUnit = unit;
+  document.getElementById('btn-kg').classList.toggle('active', unit === 'kg');
+  document.getElementById('btn-lbs').classList.toggle('active', unit === 'lbs');
+  const eqKey   = document.getElementById('eq-picker').value;
+  const needsW  = EQUATIONS[eqKey].fields.includes('f-weight') || EQUATIONS[eqKey].usesBMI === true;
+  const f_kg    = document.getElementById('f-weight-kg');
+  const f_lbs   = document.getElementById('f-weight-lbs');
+  if (unit === 'kg') {
+    f_kg.classList.toggle('hidden', !needsW);
+    f_lbs.classList.add('hidden');
+    document.getElementById('weight-kg').value = prevKg.toFixed(1);
+  } else {
+    f_lbs.classList.toggle('hidden', !needsW);
+    f_kg.classList.add('hidden');
+    document.getElementById('weight-lbs').value = (prevKg / 0.453592).toFixed(1);
+  }
+  refreshEquationDisplay();
+  updateBmi(); calc();
+}
+
+function setPaceUnit(unit) {
+  // convert existing pace values
+  const factor = unit === 'minkm' ? (1 / 1.60934) : 1.60934;
+  if (unit !== paceUnit) {
+    PACE_IDS.forEach(k => {
+      const inp = document.getElementById(PACE_INPUTS[k]);
+      const cur = parseFloat(inp.value) || 0;
+      inp.value = (cur * factor).toFixed(2);
+    });
+  }
+  paceUnit = unit;
+  document.getElementById('btn-minmi').classList.toggle('active', unit === 'minmi');
+  document.getElementById('btn-minkm').classList.toggle('active', unit === 'minkm');
+  updatePaceLabels();
+  refreshVisibleRaceTimeConversions();
+  refreshEquationDisplay();
+  calc();
+}
+
+// ─── Main calc ────────────────────────────────────────────
+const MODEL_WARNING_THRESHOLDS = {
+  '1500m': {
+    age:{p01:17,p05:18,p95:42,p99:54.37},
+    bmi:{p01:17.5018,p05:18.35,p95:23.4628,p99:24.1576},
+    height:{p01:154.94,p05:160.009,p95:187.96,p99:195.58},
+    hrs:{p01:4,p05:5,p95:20,p99:26.6},
+    pace:{p01:3.9095,p05:4.0234,p95:5.488,p99:5.8225},
+    weight:{p01:47.6272,p05:49.9423,p95:77.6097,p99:82.6241},
+    yrs:{p01:1.25,p05:3,p95:25,p99:35}
+  },
+  mile: {
+    bmi:{p01:17.3812,p05:18.4054,p95:23.4241,p99:23.7491},
+    height:{p01:154.94,p05:160.02,p95:187.96,p99:196.4436},
+    hrs:{p01:3.65,p05:5,p95:20,p99:26.75},
+    pace:{p01:3.939,p05:4.0725,p95:5.5,p99:6.016},
+    weight:{p01:47.6272,p05:49.9266,p95:78.3354,p99:81.4334},
+    yrs:{p01:2,p05:3,p95:25.5,p99:33.9}
+  },
+  '5k': {
+    age:{p01:17,p05:18,p95:44,p99:55},
+    bmi:{p01:17.3793,p05:17.9677,p95:23.411,p99:24.3022},
+    height:{p01:152.4,p05:157.48,p95:187.96,p99:195.58},
+    hrs:{p01:4,p05:5,p95:20,p99:28.1},
+    pace:{p01:4.3578,p05:4.581,p95:6.3464,p99:7.0587},
+    weight:{p01:44,p05:48.988,p95:76.2035,p99:83.5177},
+    yrs:{p01:1,p05:3,p95:25,p99:37}
+  },
+  '10k': {
+    age:{p01:17.12,p05:20,p95:46.8,p99:63.88},
+    height:{p01:152.478,p05:157.312,p95:186,p99:192.74},
+    pace:{p01:4.5586,p05:4.7709,p95:6.6506,p99:7.2057}
+  },
+  half: {
+    age:{p01:19,p05:21,p95:47,p99:60.1},
+    bmi:{p01:17.3701,p05:18.1311,p95:23.5961,p99:24.8509},
+    height:{p01:149.86,p05:155.9,p95:185.42,p99:193},
+    hrs:{p01:4,p05:5,p95:16,p99:21.55},
+    pace:{p01:4.9019,p05:5.1219,p95:7.323,p99:8.4253},
+    weight:{p01:45,p05:48.9946,p95:75,p99:83.0522},
+    yrs:{p01:1,p05:2,p95:25.25,p99:35}
+  },
+  marathon: {
+    age:{p01:19.28,p05:22,p95:49.6,p99:63.72},
+    bmi:{p01:17.3774,p05:18.3552,p95:23.8735,p99:24.931},
+    height:{p01:152.4,p05:157.36,p95:185.42,p99:193},
+    hrs:{p01:4,p05:5,p95:18,p99:25},
+    pace:{p01:5.0094,p05:5.2829,p95:8.1239,p99:8.8734},
+    weight:{p01:45.3592,p05:48.8519,p95:76.4425,p99:83.971},
+    yrs:{p01:1.5,p05:2,p95:27.35,p99:39.87}
+  },
+  best: {
+    age:{p01:17,p05:19,p95:48,p99:64},
+    bmi:{p01:17.3601,p05:18.1653,p95:23.5854,p99:24.7422},
+    height:{p01:152.4,p05:157.48,p95:187.96,p99:193.04},
+    hrs:{p01:4,p05:5,p95:20,p99:25},
+    pace:{p01:4.0521,p05:4.3633,p95:7.3606,p99:8.6263},
+    weight:{p01:44,p05:48.988,p95:77.1541,p99:83.9146},
+    yrs:{p01:1,p05:2,p95:25,p99:39.01}
+  },
+  training_only: {
+    age:{p01:17,p05:19,p95:48,p99:65},
+    bmi:{p01:17.2269,p05:18.2531,p95:24.2097,p99:26.0383},
+    height:{p01:152.4,p05:157.48,p95:187.96,p99:194},
+    hrs:{p01:4,p05:5,p95:21.1538,p99:30},
+    weight:{p01:43.9,p05:48.988,p95:80,p99:89.1233},
+    yrs:{p01:1,p05:2,p95:25,p99:39.71}
+  }
+};
+
+function displayThresholdValue(varKey, value) {
+  if (varKey === 'height') {
+    if (heightUnit === 'ftin') {
+      const totalIn = value / 2.54;
+      const ft = Math.floor(totalIn / 12);
+      const inch = Math.round((totalIn - ft * 12) * 10) / 10;
+      return `${ft} ft ${inch} in`;
+    }
+    return `${value.toFixed(value % 1 ? 1 : 0)} cm`;
+  }
+  if (varKey === 'weight') {
+    if (weightUnit === 'lbs') return `${(value / 0.453592).toFixed(1)} lbs`;
+    return `${value.toFixed(value % 1 ? 1 : 0)} kg`;
+  }
+  if (varKey === 'pace') {
+    const display = paceUnit === 'minkm' ? value / 1.60934 : value;
+    return `${display.toFixed(2)} ${paceUnit === 'minkm' ? 'min/km' : 'min/mi'}`;
+  }
+  if (varKey === 'bmi') return `${value.toFixed(1)} kg/m²`;
+  if (varKey === 'hrs') return `${value.toFixed(value % 1 ? 1 : 0)} h/week`;
+  if (varKey === 'yrs') return `${value.toFixed(value % 1 ? 1 : 0)} years`;
+  if (varKey === 'age') return `${value.toFixed(value % 1 ? 1 : 0)} years`;
+  return value.toFixed(1);
+}
+
+function warningLabel(varKey) {
+  const labels = {
+    age:'Age', hrs:'Average training hours/week', yrs:'Years competing',
+    height:'Height', weight:'Body weight', bmi:'BMI', pace:'Race pace'
+  };
+  return labels[varKey] || varKey;
+}
+
+function getCurrentValueForWarning(varKey, key, v) {
+  if (varKey === 'age') return v.age;
+  if (varKey === 'hrs') return v.hrs;
+  if (varKey === 'yrs') return v.yrs;
+  if (varKey === 'height') return v.heightCm;
+  if (varKey === 'weight') return v.weightKg;
+  if (varKey === 'bmi') return v.bmi;
+  if (varKey === 'pace') {
+    const paceFields = {
+      '5k':v.pace5kMi, '10k':v.pace10kMi, half:v.pacehmMi,
+      marathon:v.pacemMi, '1500m':v.pace1500mMi, mile:v.pacemileMi, best:v.bestpaceMi
+    };
+    return paceFields[key];
+  }
+  return null;
+}
+
+function getWarnings(key, v, vo2) {
+  const warnings = [];
+  const thresholds = MODEL_WARNING_THRESHOLDS[key] || {};
+
+  Object.entries(thresholds).forEach(([varKey, t]) => {
+    if (varKey === 'bmi' && EQUATIONS[key].usesBMI !== true) return;
+    const value = getCurrentValueForWarning(varKey, key, v);
+    if (value === null || value === undefined || isNaN(value) || value === 0) return;
+
+    const broadRange = `${displayThresholdValue(varKey, t.p01)}–${displayThresholdValue(varKey, t.p99)}`;
+    const typicalRange = `${displayThresholdValue(varKey, t.p05)}–${displayThresholdValue(varKey, t.p95)}`;
+
+    if (value < t.p01 || value > t.p99) {
+      warnings.push(`<strong>${warningLabel(varKey)}:</strong> ${displayThresholdValue(varKey, value)} is outside the broad observed range for this model (${broadRange}). This may represent extrapolation.`);
+    } else if (value < t.p05 || value > t.p95) {
+      warnings.push(`<strong>${warningLabel(varKey)}:</strong> ${displayThresholdValue(varKey, value)} is outside the typical range observed for this model (${typicalRange}). Interpret with caution.`);
+    }
+  });
+
+  if (vo2 && (vo2 < 25 || vo2 > 90)) {
+    warnings.push('<strong>Predicted VO₂max:</strong> The result is outside a broad expected range. Check inputs and interpret with caution.');
+  }
+
+  return warnings;
+}
+function updateWarnings(warnings) {
+  const box = document.getElementById('warning-box');
+  if (!box) return;
+  if (!warnings.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  box.style.display = 'block';
+  box.innerHTML = `<strong>Model Warning</strong><ul>${warnings.map(w => `<li>${w}</li>`).join('')}</ul>`;
+}
+function calc() {
+  document.getElementById('hrs-out').textContent = document.getElementById('hrs').value;
+  document.getElementById('yrs-out').textContent = document.getElementById('yrs').value;
+  updateBmi();
+
+  const key = document.getElementById('eq-picker').value;
+  const eq  = EQUATIONS[key];
+  const v   = getVals();
+  const terms = eq.calc(v);
+  const vo2   = Object.values(terms).reduce((a, b) => a + b, 0);
+  const rounded = Math.round(vo2 * 10) / 10;
+  const isValid = !isNaN(rounded) && isFinite(rounded);
+
+  document.getElementById('result').textContent = isValid ? rounded.toFixed(1) : '—';
+
+  let cat = '', catNote = '';
+  if      (vo2 >= 63) { cat = 'Elite / Superior'; catNote = 'Top 1% aerobic capacity'; }
+  else if (vo2 >= 57) { cat = 'Excellent';         catNote = 'Well above average'; }
+  else if (vo2 >= 51) { cat = 'Good';              catNote = 'Above average'; }
+  else if (vo2 >= 44) { cat = 'Average';           catNote = 'Within normal range'; }
+  else                { cat = 'Below average';     catNote = 'Below population mean'; }
+  document.getElementById('category').textContent = isValid ? cat : '—';
+  document.getElementById('range-note').textContent = isValid ? catNote : '';
+
+  const low = isValid ? (rounded - eq.rmse).toFixed(1) : '—';
+  const high = isValid ? (rounded + eq.rmse).toFixed(1) : '—';
+  const meta = document.getElementById('result-meta');
+  if (meta) {
+    meta.innerHTML = `<strong>Model:</strong> ${eq.label} &nbsp;·&nbsp; <strong>RMSE:</strong> ±${eq.rmse} mL/kg/min &nbsp;·&nbsp; <strong>Approximate model-error range:</strong> ${low}–${high} mL/kg/min`;
+  }
+  updateWarnings(isValid ? getWarnings(key, v, vo2) : []);
+
+  let bd = '';
+  for (const [k, val] of Object.entries(terms)) {
+    if (val === 0 && k.startsWith('src')) continue;
+    const row = termEquationDisplay(key, k, val, v);
+    bd += `<div class="breakdown-row"><span class="term-label">${row.label}</span><span class="term-value">${row.expression}</span></div>`;
+  }
+  bd += `<div class="breakdown-total">Total predicted VO₂max: ${isValid ? rounded.toFixed(1) : '—'} mL·kg⁻¹·min⁻¹</div>`;
+  document.getElementById('breakdown').innerHTML = bd;
+
+  lastCalculation = isValid ? { key, label:eq.label, rmse:eq.rmse, r2:eq.r2, n:eq.n, vo2:rounded, low:parseFloat(low), high:parseFloat(high), category:cat, values:v, terms } : null;
+}
+
+function copyResult() {
+  if (!lastCalculation) return;
+  const c = lastCalculation;
+  const text = `Predicted VO2max: ${c.vo2.toFixed(1)} mL/kg/min using the ${c.label} equation. RMSE: ±${c.rmse} mL/kg/min. Approximate model-error range: ${c.low.toFixed(1)}–${c.high.toFixed(1)} mL/kg/min. Category: ${c.category}.`;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => alert('Result copied.')).catch(() => window.prompt('Copy result:', text));
+  } else {
+    window.prompt('Copy result:', text);
+  }
+}
+function resetInputs() {
+  heightUnit = 'cm';
+  weightUnit = 'kg';
+  paceUnit = 'minmi';
+  document.getElementById('btn-cm').classList.add('active');
+  document.getElementById('btn-ftin').classList.remove('active');
+  document.getElementById('btn-kg').classList.add('active');
+  document.getElementById('btn-lbs').classList.remove('active');
+  document.getElementById('btn-minmi').classList.add('active');
+  document.getElementById('btn-minkm').classList.remove('active');
+  updatePaceLabels();
+  PACE_IDS.forEach(k => setPaceEntryMode(k, 'pace'));
+  document.getElementById('sex').value = 'male';
+  document.getElementById('age').value = 27;
+  document.getElementById('hrs').value = 7;
+  document.getElementById('yrs').value = 2;
+  document.getElementById('height-cm').value = 178;
+  document.getElementById('height-ft').value = 5;
+  document.getElementById('height-in').value = 10;
+  document.getElementById('weight-kg').value = 75;
+  document.getElementById('weight-lbs').value = 165;
+  document.getElementById('bmi').value = 23.7;
+  document.getElementById('bmi').setAttribute('readonly','readonly');
+  document.getElementById('bmi').style.background = '#f0f4f0';
+  document.getElementById('bmi').style.cursor = 'default';
+  bmiOverride = false;
+  const defaults = { pace5k:6.42, pace10k:6.92, pacehm:7.50, pacem:8.00, pace1500m:5.33, pacemile:5.50, bestpace:6.42 };
+  Object.entries(defaults).forEach(([id,val]) => { const el = document.getElementById(id); if (el) el.value = val.toFixed(2); });
+  document.getElementById('bestsource').value = '5k';
+  updateBmi();
+  updateEquation();
+}
+function saveEstimate() {
+  if (!lastCalculation) return;
+  const v = lastCalculation.values;
+  const key = lastCalculation.key;
+  const paceMap = { '5k':v.pace5kMi, '10k':v.pace10kMi, half:v.pacehmMi, marathon:v.pacemMi, '1500m':v.pace1500mMi, mile:v.pacemileMi, best:v.bestpaceMi };
+  const raceInfo = key === 'training_only' ? 'No race pace' : `${(paceMap[key] || 0).toFixed(2)} min/mi${key === 'best' ? ` (${RACE_LABELS[v.bestsource]} source)` : ''}`;
+  savedEstimates.push({
+    label:lastCalculation.label,
+    vo2:lastCalculation.vo2,
+    rmse:lastCalculation.rmse,
+    range:`${lastCalculation.low.toFixed(1)}–${lastCalculation.high.toFixed(1)}`,
+    raceInfo,
+    inputs:`${v.sex}, age ${v.age}, ${v.hrs} h/wk${EQUATIONS[key].fields.includes('f-yrs') ? `, ${v.yrs} yrs competing` : ''}`
+  });
+  renderSavedEstimates();
+}
+function removeSavedEstimate(i) {
+  savedEstimates.splice(i,1);
+  renderSavedEstimates();
+}
+function renderSavedEstimates() {
+  const el = document.getElementById('saved-estimates');
+  if (!el) return;
+  if (!savedEstimates.length) {
+    el.innerHTML = '<p class="saved-empty">No saved estimates yet. Choose a model, enter values, then save the estimate to compare it with another model or race entry.</p>';
+    return;
+  }
+  el.innerHTML = `<table class="saved-table"><thead><tr><th>Model</th><th>VO₂max</th><th>Approx. range</th><th>Race input</th><th>Inputs</th><th></th></tr></thead><tbody>${savedEstimates.map((r,i)=>`<tr><td>${r.label}</td><td><strong>${r.vo2.toFixed(1)}</strong></td><td>${r.range}</td><td>${r.raceInfo}</td><td>${r.inputs}</td><td><button type="button" class="secondary-btn" onclick="removeSavedEstimate(${i})">Remove</button></td></tr>`).join('')}</tbody></table>`;
+}
+
+// ─── Equation switch ──────────────────────────────────────
+function updateEquation() {
+  const key = document.getElementById('eq-picker').value;
+  const eq  = EQUATIONS[key];
+  refreshEquationDisplay();
+  document.getElementById('eq-stats').innerHTML =
+    `<span class="stat-pill">N = <strong>${eq.n.toLocaleString()}</strong></span>` +
+    `<span class="stat-pill">RMSE = <strong>${eq.rmse}</strong></span>` +
+    `<span class="stat-pill">R² = <strong>${eq.r2}</strong></span>`;
+
+  // Hide all actual DOM fields, then show the fields needed by this equation.
+  ALL_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
+
+  const usesBMI = eq.usesBMI === true;
+  const hasExplicitHeight = eq.fields.includes('f-height');
+  const hasExplicitWeight = eq.fields.includes('f-weight');
+
+  // Explicit aliases: height and weight have unit-specific DOM fields.
+  // BMI is a derived model input: only show it when the selected equation
+  // actually has a BMI coefficient, and always show both height and weight
+  // so the BMI value is calculated from visible user-entered values.
+  if (hasExplicitHeight || usesBMI) {
+    document.getElementById(heightUnit === 'cm' ? 'f-height-cm' : 'f-height-ftin').classList.remove('hidden');
+  }
+  if (hasExplicitWeight || usesBMI) {
+    document.getElementById(weightUnit === 'kg' ? 'f-weight-kg' : 'f-weight-lbs').classList.remove('hidden');
+  }
+  if (usesBMI) {
+    document.getElementById('f-bmi').classList.remove('hidden');
+  } else {
+    document.getElementById('f-bmi').classList.add('hidden');
+  }
+
+  eq.fields.forEach(id => {
+    if (id === 'f-height' || id === 'f-weight' || id === 'f-bmi') return;
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('hidden');
+  });
+
+  refreshModelGuide();
+  updateActiveModelChips();
+  refreshVisibleRaceTimeConversions();
+  calc();
+}
+
+// ─── Wire events ─────────────────────────────────────────
+document.getElementById('eq-picker').addEventListener('change', updateEquation);
+document.querySelectorAll('input:not([type=range]), select').forEach(el => {
+  if (el.id !== 'eq-picker') {
+    el.addEventListener('input', () => {
+      // If user types directly into BMI, lock the auto-calculation.
+      if (el.id === 'bmi') {
+        bmiOverride = true;
+      }
+      // If user modifies height or weight, resume BMI auto-calculation.
+      else if (['height-cm', 'height-ft', 'height-in', 'weight-kg', 'weight-lbs'].includes(el.id)) {
+        bmiOverride = false;
+        const bmiInput = document.getElementById('bmi');
+        bmiInput.setAttribute('readonly', 'readonly');
+        bmiInput.style.background = '#f0f4f0';
+        bmiInput.style.cursor = 'default';
+      }
+      calc();
+    });
+  }
+});
+document.querySelectorAll('input[type=range]').forEach(el => el.addEventListener('input', calc));
+document.getElementById('bestsource').addEventListener('change', () => { refreshVisibleRaceTimeConversions(); calc(); });
+
+enhancePaceTimeInputs();
+wireModelChips();
+updatePaceLabels();
+updateEquation();
+</script>
+</body>
+</html>
